@@ -6,6 +6,8 @@ student_id = ''
 student_name = ''
 course = ''
 to_continue = True
+student_dict = {}
+assessment_dict = {}
 
 
 class Choice(Enum):
@@ -96,6 +98,7 @@ def insert_assessment():
     global student_id
     if student_id == '':
         student_id = take_user_input('Please enter the student ID: ', 1)
+    # Check if student ID is present in students.txt file
     subject_code = take_user_input('Please enter the subject code: ', 1)
     assessment_no = take_user_input('Please enter the assessment no: ', 1)
     assessment_marks = take_user_input('Please enter the assessment marks: ', 1)
@@ -110,6 +113,79 @@ def insert_assessment():
     # TODO validation
 
 
+def read_from_file(filename):
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            file_data = f.read()
+            file_data = file_data.strip().split('\n')
+    else:
+        file_data = []
+    return file_data
+
+
+def load_search_data():
+    global student_dict, assessment_dict
+    student_data = read_from_file('students.txt')
+    assessment_data = read_from_file('assessments.txt')
+
+    for i in student_data:
+        try:
+            students_id, students_name, students_course = i.strip().split(',')
+            student_dict[students_id] = {
+                'student_id': students_id,
+                'student_name': students_name,
+                'course': students_course
+            }
+        except ValueError:
+            continue
+
+    for i in assessment_data:
+        try:
+            students_id, subject_code, assessment_no, assessment_marks = i.strip().split(',')
+            if students_id in assessment_dict:
+                assessment_dict[students_id].append({
+                    'student_id': students_id,
+                    'subject_code': subject_code,
+                    'assessment_no': assessment_no,
+                    'assessment_marks': assessment_marks
+                })
+            else:
+                assessment_dict[students_id] = [{
+                    'student_id': students_id,
+                    'subject_code': subject_code,
+                    'assessment_no': assessment_no,
+                    'assessment_marks': assessment_marks
+                }]
+        except ValueError:
+            continue
+
+
+def search_files():
+    global to_continue
+
+    load_search_data()
+    student_id_to_search = take_user_input('Please enter the student ID you want to search assessment marks for:  ',1)
+    print('Thank you!')
+    if student_id_to_search in student_dict:
+        print('The student has been found')
+        print('Student ID: ', student_dict[student_id_to_search]['student_id'])
+        print('Student name: ', student_dict[student_id_to_search]['student_name'])
+        print('Course: ', student_dict[student_id_to_search]['course'])
+        if student_id_to_search in assessment_dict:
+            assessments = assessment_dict[student_id_to_search]
+            print('{:<12} {:<20} {:<12}'.format('Subject code', 'Assessment number', 'Marks'))
+            for assessment in assessments:
+                print('{:<12} {:<20} {:<12}'.format(assessment['subject_code'],
+                                                    assessment['assessment_no'],
+                                                    assessment['assessment_marks']))
+        else:
+            print('No assessments present for this student')
+    else:
+        print(f'No student exists with ID {student_id_to_search}')
+
+    check_whether_to_continue('Do you want to check marks for another student (Y/N)? ')
+
+
 if __name__ == '__main__':
     while to_continue:
         if not choice:
@@ -122,4 +198,4 @@ if __name__ == '__main__':
         elif choice == Choice.Insert:
             insert_assessment()
         elif choice == Choice.Search:
-            pass
+            search_files()
