@@ -5,6 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
+students.txt
+assessments.txt
 
 # Distribution / packaging
 .Python
