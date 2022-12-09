@@ -27,12 +27,13 @@ def welcome():
 
 
 def check_whether_to_continue(display_text):
-    global to_continue, choice
+    global to_continue, choice, student_id
     user_choice = take_user_input(display_text, 1)
     if user_choice == 'Y' or user_choice == 'y':
         to_continue = True
     elif user_choice == 'N' or user_choice == 'n':
         choice = ''
+        student_id = ''
     else:
         print('Please enter either Y or N')
         check_whether_to_continue(display_text)
@@ -61,17 +62,18 @@ def initial_screen():
     user_choice = take_user_input()
     if not validate_choice(user_choice):
         initial_screen()
-
     return True
 
 
 def write_to_file(filename, data):
     if os.path.isfile(filename):
         mode = 'a'
+        data_to_write = '\n' + ','.join([str(i) for i in data])
     else:
         mode = 'w'
+        data_to_write = ','.join([str(i) for i in data])
     with open(filename, mode=mode) as f:
-        f.write(','.join([str(i) for i in data])+'\n')
+        f.write(data_to_write)
     print(f'The record has been successfully added to the {filename} file.')
 
 
@@ -90,6 +92,24 @@ def add_student():
     # TODO validation
 
 
+def insert_assessment():
+    global student_id
+    if student_id == '':
+        student_id = take_user_input('Please enter the student ID: ', 1)
+    subject_code = take_user_input('Please enter the subject code: ', 1)
+    assessment_no = take_user_input('Please enter the assessment no: ', 1)
+    assessment_marks = take_user_input('Please enter the assessment marks: ', 1)
+    print('Thank you')
+    print('The details of the student you entered are as follows: ')
+    print('Student ID: ', student_id)
+    print('subject_code: ', subject_code)
+    print('assessment_no: ', assessment_no)
+    print('assessment_marks: ', assessment_marks)
+    write_to_file('assessments.txt', [student_id, subject_code, assessment_no, assessment_marks])
+    check_whether_to_continue('Do you want to enter marks for another assessment (Y/N)? ')
+    # TODO validation
+
+
 if __name__ == '__main__':
     while to_continue:
         if not choice:
@@ -100,6 +120,6 @@ if __name__ == '__main__':
         elif choice == Choice.Add:
             add_student()
         elif choice == Choice.Insert:
-            pass
+            insert_assessment()
         elif choice == Choice.Search:
             pass
